@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   useViewerQuery,
   useUpdateNameMutation,
@@ -9,11 +9,15 @@ import { initializeApollo } from '../lib/apollo'
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { Menu } from '../components/menu'
+import { H1 } from '../components/H1'
+import { Temp } from '../components/Temp'
+import {ESP8266_DHT_Data} from '../types'
 
 const Index = () => {
   const { data, loading, error } = useViewerQuery()
   const [newName, setNewName] = useState('')
   const [updateNameMutation] = useUpdateNameMutation()
+  const [temp, setTemp] = useState<Number>(0);
 
   const onChangeName = () => {
     updateNameMutation({
@@ -23,17 +27,27 @@ const Index = () => {
     })
   }
 
+  useEffect(() => {
+    const loadData = async () =>{
+      const result = await fetch("http://192.168.1.27/");
+      const data = (await result.json()) as ESP8266_DHT_Data;
+      console.log(data.temp);
+      setTemp(data.temp);
+    };
+    loadData();
+  },[]);
+
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>SmartHome</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Menu />
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <H1>Welcome to SmartHome</H1>
+
+        <Temp>{temp}</Temp>
 
         <div className={styles.graphql}>
           {loading && <>Loading....</>}
